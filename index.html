@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0F6E56">
+  <meta name="robots" content="index,follow">
+  <meta name="description" content="Interactive AI risk assessment for IT and compliance teams. Answer 15 questions and get an instant scorecard with action recommendations.">
+  <meta property="og:title" content="AI Risk Scorecard">
+  <meta property="og:description" content="Answer 15 questions and get an instant AI risk scorecard with action recommendations for IT and compliance teams.">
+  <meta property="og:type" content="website">
+  <title>AI Risk Scorecard</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --font-sans: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --color-background: #F6F8F7;
+      --color-background-primary: #FFFFFF;
+      --color-background-secondary: #F2F6F5;
+      --color-border-tertiary: #D7E1DD;
+      --color-border-secondary: #C5D3CC;
+      --color-text-primary: #0F2F2B;
+      --color-text-secondary: #51615C;
+      --border-radius-md: 18px;
+      --border-radius-lg: 22px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    html, body { min-height: 100%; }
+    body {
+      margin: 0;
+      font-family: var(--font-sans);
+      background: radial-gradient(circle at top left, rgba(15,110,86,0.12), transparent 28%),
+                  linear-gradient(180deg, #F8FBFA 0%, #F2F6F5 100%);
+      color: var(--color-text-primary);
+      line-height: 1.5;
+      padding: 24px;
+    }
+    button { cursor: pointer; }
+    .w {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+    .sc { display: none; }
+    .sc.on { display: block; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--color-background-secondary);
+      border: 1px solid var(--color-border-tertiary);
+      border-radius: var(--border-radius-md);
+      padding: 6px 14px;
+      font-size: 12px;
+      color: var(--color-text-secondary);
+      margin-bottom: 1.6rem;
+    }
+    .h1 { font-size: clamp(2rem, 3vw, 3.2rem); font-weight: 600; color: var(--color-text-primary); line-height: 1.05; margin-bottom: .9rem; }
+    .accent { color: #0F6E56; }
+    .lead { font-size: 1rem; color: var(--color-text-secondary); max-width: 42rem; margin-bottom: 1.75rem; }
+    .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-bottom: 2rem; }
+    .stat { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 1rem 1.15rem; text-align: center; }
+    .stat-n { font-size: 1.55rem; font-weight: 600; color: var(--color-text-primary); display: block; }
+    .stat-l { font-size: .8rem; color: var(--color-text-secondary); margin-top: 4px; letter-spacing: .01em; text-transform: uppercase; }
+    .btn-p, .btn-n, .btn-g { font-family: var(--font-sans); border: none; border-radius: var(--border-radius-md); transition: all .18s ease; }
+    .btn-p {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: #0F6E56;
+      color: #E1F5EE;
+      padding: .95rem 1.6rem;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-p:hover { opacity: .94; }
+    .btn-g {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: .75rem 1rem;
+      color: var(--color-text-secondary);
+      background: transparent;
+      border: 1px solid var(--color-border-tertiary);
+      font-size: .95rem;
+      cursor: pointer;
+    }
+    .btn-g:hover { background: var(--color-background-secondary); }
+    .btn-n {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #0F6E56;
+      color: #E1F5EE;
+      padding: .75rem 1.4rem;
+      font-size: .95rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-n:hover { opacity: .94; }
+    .btn-n:disabled { opacity: .4; cursor: not-allowed; }
+    .pbar { height: 4px; background: var(--color-border-tertiary); border-radius: 999px; margin-bottom: 1.8rem; overflow: hidden; }
+    .pfill { height: 100%; background: #0F6E56; border-radius: inherit; transition: width .3s ease; }
+    .catlbl { font-size: .78rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #0F6E56; margin-bottom: .55rem; }
+    .qnum { font-size: .88rem; color: var(--color-text-secondary); margin-bottom: .45rem; }
+    .qtxt { font-size: 1.15rem; font-weight: 600; color: var(--color-text-primary); line-height: 1.5; margin-bottom: 1.6rem; }
+    .opts { display: grid; gap: 11px; margin-bottom: 1.9rem; }
+    .opt {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 1rem 1.05rem;
+      border: 1px solid var(--color-border-tertiary);
+      border-radius: var(--border-radius-md);
+      background: var(--color-background-primary);
+      cursor: pointer;
+      text-align: left;
+      width: 100%;
+    }
+    .opt:hover { border-color: var(--color-border-secondary); background: var(--color-background-secondary); }
+    .opt.sel { border-color: #0F6E56; background: #E1F5EE; }
+    .dot { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--color-border-secondary); display: grid; place-items: center; flex-shrink: 0; }
+    .opt.sel .dot { background: #0F6E56; border-color: #0F6E56; }
+    .opt.sel .dot::after { content: ''; width: 7px; height: 7px; border-radius: 50%; background: #fff; }
+    .otxt { font-size: .97rem; color: var(--color-text-primary); }
+    .opt.sel .otxt { color: #085041; font-weight: 600; }
+    .nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    .crow { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .cname { font-size: .85rem; color: var(--color-text-secondary); width: 165px; min-width: 140px; line-height: 1.35; }
+    .ctrack { flex: 1; height: 6px; background: var(--color-border-tertiary); border-radius: 999px; overflow: hidden; }
+    .cfill { height: 100%; width: 0%; border-radius: inherit; transition: width .9s ease; }
+    .cscore { font-size: .84rem; font-weight: 600; color: var(--color-text-primary); width: 42px; text-align: right; }
+    .rec { display: flex; gap: 14px; padding: 1rem 1rem; border: 1px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); background: var(--color-background-primary); }
+    .ric { width: 36px; height: 36px; border-radius: var(--border-radius-md); display: grid; place-items: center; flex-shrink: 0; }
+    .rt { font-size: .96rem; font-weight: 600; color: var(--color-text-primary); margin-bottom: 4px; }
+    .rd { font-size: .92rem; color: var(--color-text-secondary); line-height: 1.6; }
+    .result-header { text-align: center; margin-bottom: 1.6rem; }
+    .score-ring { display: inline-flex; width: 140px; height: 140px; margin: 0 auto .9rem; }
+    .score-value { font-size: 3rem; font-weight: 700; color: var(--color-text-primary); line-height: 1; }
+    .score-label { font-size: .95rem; color: var(--color-text-secondary); margin-top: .3rem; }
+    .grade-pill { display: inline-flex; align-items: center; justify-content: center; padding: .75rem 1.2rem; border-radius: 999px; font-size: .98rem; font-weight: 600; margin-bottom: 1.9rem; }
+    .score-breakdown { margin-bottom: 1.6rem; }
+    .score-breakdown h2 { font-size: 1rem; font-weight: 700; margin-bottom: 1rem; color: var(--color-text-primary); }
+    .remediation-box { background: var(--color-background-secondary); border: 1px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1.35rem 1.4rem; margin-bottom: 1.4rem; }
+    .remediation-title { font-size: 1rem; font-weight: 700; color: var(--color-text-primary); margin-bottom: .5rem; }
+    .remediation-copy { font-size: .93rem; color: var(--color-text-secondary); margin-bottom: 1rem; line-height: 1.6; }
+    .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(12px); background: rgba(15,110,86,.97); color: #fff; padding: .9rem 1.2rem; border-radius: 999px; box-shadow: 0 14px 35px rgba(15,110,86,.18); opacity: 0; pointer-events: none; transition: opacity .2s ease, transform .2s ease; z-index: 10; }
+    .toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+    @media (max-width: 640px) {
+      body { padding: 18px; }
+      .w { padding: 0; }
+      .stats { grid-template-columns: 1fr; }
+      .nav { flex-direction: column; align-items: stretch; }
+      .btn-g, .btn-n { width: 100%; justify-content: center; }
+      .cname { width: 100px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="w">
+    <section class="sc on" id="s-intro">
+      <div class="badge"><span aria-hidden="true">✔</span> AI Trust & Security — 2026 Edition</div>
+      <h1 class="h1">How secure is your<br><span class="accent">AI environment?</span></h1>
+      <p class="lead">Answer 15 questions across 5 risk domains. Get an instant scorecard with your risk grade and prioritized action items — built for IT and compliance teams.</p>
+      <div class="stats">
+        <div class="stat"><span class="stat-n">5</span><span class="stat-l">Risk domains</span></div>
+        <div class="stat"><span class="stat-n">15</span><span class="stat-l">Questions</span></div>
+        <div class="stat"><span class="stat-n">~4 min</span><span class="stat-l">To complete</span></div>
+      </div>
+      <button class="btn-p" type="button" onclick="go()">Start assessment <span aria-hidden="true">→</span></button>
+    </section>
+
+    <section class="sc" id="s-q" aria-live="polite" aria-atomic="true">
+      <div class="pbar"><div class="pfill" id="pf" style="width:0%"></div></div>
+      <div class="catlbl" id="qcat"></div>
+      <div class="qnum" id="qn"></div>
+      <div class="qtxt" id="qt"></div>
+      <div class="opts" id="qo"></div>
+      <div class="nav">
+        <button class="btn-g" type="button" id="bb" onclick="back()"><span aria-hidden="true">←</span> Back</button>
+        <button class="btn-n" type="button" id="bn" onclick="nxt()" disabled>Next <span aria-hidden="true">→</span></button>
+      </div>
+    </section>
+
+    <section class="sc" id="s-res" aria-live="polite"></section>
+  </main>
+
+  <script>
+    const QS=[
+      {c:"Data privacy & governance",q:"Do you have a data classification policy covering AI training and prompt data?"},
+      {c:"Data privacy & governance",q:"Is personal or sensitive data masked before being sent to AI tools or APIs?"},
+      {c:"Data privacy & governance",q:"Do you regularly audit which data your AI systems can access?"},
+      {c:"Employee AI usage policies",q:"Does your organization have a formal AI acceptable use policy?"},
+      {c:"Employee AI usage policies",q:"Are employees trained on AI-specific security risks and data handling?"},
+      {c:"Employee AI usage policies",q:"Do you have a process to discover and approve (or block) AI tools employees use?"},
+      {c:"Vendor & third-party AI risk",q:"Do you assess AI vendors' data handling and retention practices before onboarding?"},
+      {c:"Vendor & third-party AI risk",q:"Are AI vendor contracts reviewed for data sharing and breach notification clauses?"},
+      {c:"Vendor & third-party AI risk",q:"Do you maintain an up-to-date inventory of all third-party AI tools in use?"},
+      {c:"Model security & access control",q:"Is access to AI systems restricted by role and reviewed on a regular schedule?"},
+      {c:"Model security & access control",q:"Do you have controls in place to detect or prevent prompt injection attacks?"},
+      {c:"Model security & access control",q:"Are AI model inputs and outputs logged and retained for security audits?"},
+      {c:"Incident response & monitoring",q:"Do you have an AI-specific section in your incident response plan?"},
+      {c:"Incident response & monitoring",q:"Can you detect if sensitive data is being leaked through AI tools in real time?"},
+      {c:"Incident response & monitoring",q:"Has your org conducted a formal AI security assessment in the past 12 months?"}
+    ];
+    const OPTS=[{l:"Not implemented",s:0},{l:"Planning to implement",s:1},{l:"Partially implemented",s:2},{l:"Fully implemented",s:3}];
+    const CATS=["Data privacy & governance","Employee AI usage policies","Vendor & third-party AI risk","Model security & access control","Incident response & monitoring"];
+    let cur=0,ans=new Array(15).fill(null);
+
+    function show(id){document.querySelectorAll('.sc').forEach(e=>e.classList.remove('on'));document.getElementById(id).classList.add('on');}
+    function go(){show('s-q');render();}
+
+    function render(){
+      const q=QS[cur];
+      document.getElementById('pf').style.width=Math.round(cur/15*100)+'%';
+      document.getElementById('qcat').textContent=q.c;
+      document.getElementById('qn').textContent='Question '+(cur+1)+' of 15';
+      document.getElementById('qt').textContent=q.q;
+      const oel=document.getElementById('qo');
+      oel.innerHTML='';
+      OPTS.forEach((o,i)=>{
+        const d=document.createElement('button');
+        d.type='button';
+        d.className='opt'+(ans[cur]===i?' sel':'');
+        d.innerHTML='<span class="dot"></span><span class="otxt">'+o.l+'</span>';
+        d.onclick=()=>pick(i);
+        oel.appendChild(d);
+      });
+      const bn=document.getElementById('bn');
+      bn.disabled=ans[cur]===null;
+      bn.innerHTML=cur===14?'View results <span aria-hidden="true">📊</span>':'Next <span aria-hidden="true">→</span>';
+      document.getElementById('bb').style.visibility=cur===0?'hidden':'visible';
+    }
+
+    function pick(i){ans[cur]=i;document.querySelectorAll('.opt').forEach((el,idx)=>el.classList.toggle('sel',idx===i));document.getElementById('bn').disabled=false;}
+    function nxt(){if(ans[cur]===null)return;cur<14?++cur&&render():results();}
+    function back(){if(cur>0){cur--;render();}}
+
+    function results(){
+      document.getElementById('pf').style.width='100%';
+      const total=ans.reduce((s,a)=>s+(a===null?0:OPTS[a].s),0);
+      const score=Math.round(total/45*100);
+      const cs=CATS.map((cat,ci)=>{
+        const sl=ans.slice(ci*3,ci*3+3);
+        return{cat,pct:Math.round(sl.reduce((a,v)=>a+(v===null?0:OPTS[v].s),0)/9*100)};
+      });
+      let grade,rl,gc,gbg;
+      if(score>=85){grade='A';rl='Low risk';gc='#085041';gbg='#E1F5EE';}
+      else if(score>=70){grade='B';rl='Moderate-low risk';gc='#3B6D11';gbg='#EAF3DE';}
+      else if(score>=55){grade='C';rl='Moderate risk';gc='#854F0B';gbg='#FAEEDA';}
+      else if(score>=40){grade='D';rl='High risk';gc='#A32D2D';gbg='#FCEBEB';}
+      else{grade='F';rl='Critical risk';gc='#A32D2D';gbg='#FCEBEB';}
+      const rc=score>=70?'#0F6E56':score>=55?'#EF9F27':'#E24B4A';
+      const circ=2*Math.PI*52;
+      const sorted=[...cs].sort((a,b)=>a.pct-b.pct);
+      const rm={
+        "Data privacy & governance":{t:'Establish a data governance policy for AI',d:'Define how data is classified, masked, and audited before use in AI systems or third-party APIs.'},
+        "Employee AI usage policies":{t:'Roll out an AI acceptable use policy',d:'Define approved tools, data handling requirements, and make security training mandatory for all staff.'},
+        "Vendor & third-party AI risk":{t:'Implement a third-party AI vendor review process',d:'Audit all AI vendors for data retention, breach disclosure obligations, and data ownership terms.'},
+        "Model security & access control":{t:'Enforce role-based access to AI systems',d:'Apply least-privilege controls, log all AI inputs/outputs, and test for prompt injection vulnerabilities.'},
+        "Incident response & monitoring":{t:'Add AI threats to your incident response plan',d:'Define response procedures for AI-specific incidents: data leakage, model misuse, and deepfake attacks.'}
+      };
+      const recs=sorted.slice(0,3).map(c=>rm[c.cat]);
+      const el=document.getElementById('s-res');
+      el.innerHTML=`
+        <div class="result-header">
+          <div class="score-ring" aria-hidden="true">
+            <svg viewBox="0 0 120 120" role="img" aria-label="Risk score ring showing ${score} out of 100">
+              <circle cx="60" cy="60" r="52" fill="none" stroke="var(--color-border-tertiary)" stroke-width="8"/>
+              <circle cx="60" cy="60" r="52" fill="none" stroke="${rc}" stroke-width="8"
+                stroke-dasharray="${circ.toFixed(1)}" stroke-dashoffset="${circ.toFixed(1)}"
+                stroke-linecap="round" transform="rotate(-90 60 60)" id="rc" />
+            </svg>
+          </div>
+          <div class="score-value">${score}</div>
+          <div class="score-label">out of 100</div>
+        </div>
+        <div class="grade-pill">Grade ${grade} — ${rl}</div>
+        <section class="score-breakdown">
+          <h2>Score by domain</h2>
+          ${cs.map(c=>{const fc=c.pct>=70?'#0F6E56':c.pct>=50?'#EF9F27':'#E24B4A';return`<div class="crow"><div class="cname">${c.cat}</div><div class="ctrack"><div class="cfill" style="background:${fc};" data-w="${c.pct}%"></div></div><div class="cscore">${c.pct}%</div></div>`;}).join('')}
+        </section>
+        <section class="score-breakdown">
+          <h2>Priority recommendations</h2>
+          ${recs.map(r=>`<div class="rec"><div class="ric" style="background:#EAF3DE;"><span style="font-size:18px;color:#0F6E56;">•</span></div><div><div class="rt">${r.t}</div><div class="rd">${r.d}</div></div></div>`).join('')}
+        </section>
+        <div class="remediation-box">
+          <div class="remediation-title">Want a full 90-day remediation roadmap?</div>
+          <div class="remediation-copy">Get a detailed action plan built around your score, tailored to your weakest domains.</div>
+          <button class="btn-p" onclick="sendPrompt('My AI Risk Scorecard score is ${score}/100, Grade ${grade} (${rl}). My weakest domains were: ${sorted.slice(0,3).map(c=>c.cat+' at '+c.pct+'%').join(', ')}. Please give me a detailed 90-day remediation roadmap with specific, actionable steps for each weak domain.')">Copy roadmap prompt</button>
+        </div>
+        <div style="text-align:center;"><button class="btn-g" onclick="reset()">↻ Retake assessment</button></div>
+      `;
+      show('s-res');
+      setTimeout(()=>{
+        const rc2=document.getElementById('rc');
+        if(rc2)rc2.style.strokeDashoffset=(circ*(1-score/100)).toFixed(1);
+        document.querySelectorAll('.cfill[data-w]').forEach(e=>{e.style.width=e.getAttribute('data-w');});
+      },120);
+    }
+
+    function sendPrompt(text){
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(()=>showToast('Prompt copied to clipboard. Paste it into your AI or chat tool.'));
+      } else {
+        const area=document.createElement('textarea');
+        area.value=text;
+        document.body.appendChild(area);
+        area.select();
+        document.execCommand('copy');
+        document.body.removeChild(area);
+        showToast('Prompt copied to clipboard.');
+      }
+    }
+
+    function showToast(message){
+      let toast=document.getElementById('toast');
+      if(!toast){
+        toast=document.createElement('div');
+        toast.id='toast';
+        toast.className='toast';
+        toast.setAttribute('role','status');
+        toast.setAttribute('aria-live','polite');
+        document.body.appendChild(toast);
+      }
+      toast.textContent=message;
+      toast.classList.add('visible');
+      clearTimeout(toast.timeout);
+      toast.timeout=setTimeout(()=>toast.classList.remove('visible'),2800);
+    }
+
+    function reset(){cur=0;ans=new Array(15).fill(null);show('s-intro');}
+  </script>
+</body>
+</html>
